@@ -1,0 +1,15 @@
+source 'https://github.com/CocoaPods/Specs'
+
+platform :ios, '9.0'
+
+use_frameworks!
+
+inhibit_all_warnings!
+
+def all_pods
+  pod 'SVProgressHUD'
+end
+
+target 'TagTheBus' do
+  all_pods
+end

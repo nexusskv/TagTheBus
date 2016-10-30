@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="11538.1" systemVersion="16B2555" minimumToolsVersion="Automatic" sourceLanguage="Objective-C" userDefinedModelVersionIdentifier="">
+    <entity name="Station" representedClassName="Station" syncable="YES">
+        <attribute name="buses" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="city" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="distance" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="furniture" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="lat" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="lon" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="object_id" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="street_name" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="utm_x" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="utm_y" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
+    <entity name="StationPhoto" representedClassName="StationPhoto" syncable="YES">
+        <attribute name="photo_data" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="photo_date" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="photo_title" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="station_id" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
+    <elements>
+        <element name="Station" positionX="-63" positionY="-18" width="128" height="195"/>
+        <element name="StationPhoto" positionX="-54" positionY="-9" width="128" height="105"/>
+    </elements>
+</model>
