@@ -160,18 +160,27 @@
 #pragma mark - createDataSource
 - (void)createDataSource {
     dispatch_async(dispatch_get_main_queue(), ^{
-        NSArray *fetchedListArray = [[DataFetcher shared] fetchByEntity:@"Station" andPredicate:nil];
-        
-        if ([fetchedListArray count] > 0) {
-            self.listArray = [fetchedListArray sortedArrayUsingDescriptors:[self getSortDescriptorsByKey:@"street_name"
-                                                                                                  andAsc:YES]];
-            
-            [self.listTable reloadData];
-            
-            [self addStationsPinsToMap];
-        } else {
-            [self sendRequestToApi];
-        }
+        [[DataFetcher shared] fetchByEntity:@"Station"
+                              withPredicate:nil
+                                andCallback:^(id resultObject) {
+                                    
+            if ([resultObject isKindOfClass:[NSString class]]) {
+                [self showAlertMessage:resultObject];
+            } else if ([resultObject isKindOfClass:[NSArray class]]) {
+                NSArray *fetchedArray = (NSArray *)resultObject;
+                
+                if ([fetchedArray count] > 0) {
+                    self.listArray = [fetchedArray sortedArrayUsingDescriptors:[self getSortDescriptorsByKey:@"street_name"
+                                                                                                      andAsc:YES]];
+                    
+                    [self.listTable reloadData];
+                    
+                    [self addStationsPinsToMap];
+                }
+            } else {
+                [self sendRequestToApi];
+            }
+        }];
     });
 }
 #pragma mark -

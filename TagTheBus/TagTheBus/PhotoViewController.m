@@ -39,14 +39,24 @@
                                                                                                action:@selector(saveItemTapped)];
     } else {
         NSString *predicate = [NSString stringWithFormat:@"station_id = '%lu'", (unsigned long)self.detailedObjectId];
-        StationPhoto *existPhoto = [[[DataFetcher shared] fetchByEntity:@"StationPhoto" andPredicate:predicate] lastObject];
         
-        self.title = existPhoto.photo_title;
-        
-        self.photoImageView.image   = [UIImage imageWithData:existPhoto.photo_data];
-        self.titleTextField.hidden  = YES;
-        
-        self.navigationItem.rightBarButtonItem = nil;
+        [[DataFetcher shared] fetchByEntity:@"StationPhoto"
+                              withPredicate:predicate
+                                andCallback:^(id resultObject) {
+                                    
+            if ([resultObject isKindOfClass:[NSString class]]) {
+                [self showAlertMessage:resultObject];
+            } else if ([resultObject isKindOfClass:[NSArray class]]) {
+                StationPhoto *existPhoto = [(NSArray *)resultObject lastObject];
+                                        
+                self.title = existPhoto.photo_title;
+                
+                self.photoImageView.image   = [UIImage imageWithData:existPhoto.photo_data];
+                self.titleTextField.hidden  = YES;
+                
+                self.navigationItem.rightBarButtonItem = nil;
+            }
+        }];
     }
 }
 #pragma mark - 

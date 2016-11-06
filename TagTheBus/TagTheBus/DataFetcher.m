@@ -36,15 +36,65 @@
 #pragma mark -
 
 
-#pragma mark - fetchByEntity:andPredicate:
-- (NSArray *)fetchByEntity:(NSString *)title andPredicate:(NSString *)predicate {
-    NSArray *valuesArray        = nil;
-    NSArray *fetchedValues      = nil;
-    NSError *fetchError         = nil;
+#pragma mark - fetchByEntity:withPredicate:andCallback:
+- (void)fetchByEntity:(NSString *)title withPredicate:(NSString *)predicate andCallback:(DataFetcherCallback)block {
+    NSError *fetchError           = nil;
+    __block id fetchedValues      = nil;
     
-    NSEntityDescription *fetchEntity = [NSEntityDescription entityForName:title
-                                                   inManagedObjectContext:self.managedObjectContext];
+    NSFetchRequest *newRequest = [self requestForEntity:title andPredicate:predicate];
+    
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.0) {
+        NSAsynchronousFetchRequest *asyncFR =
+        [[NSAsynchronousFetchRequest alloc] initWithFetchRequest:newRequest
+                                                 completionBlock:^(NSAsynchronousFetchResult *result) {
+                                                     dispatch_async(dispatch_get_main_queue(), ^{
+                 if ([result.finalResult count] > 0) {
+                     fetchedValues = result.finalResult;
+                     
+                     block(fetchedValues);
+                 } else if (fetchError) {
+                     block(fetchError);
+                 } else {
+                     block(nil);
+                 }
+             });
+         }];
+        
+        [self.managedObjectContext executeRequest:asyncFR error:&fetchError];
+    } else {
+        fetchedValues = [self fetchByEntity:title andPredicate:predicate];
+        block(fetchedValues);
+    }
+}
+#pragma mark -
 
+
+#pragma mark - fetchByEntity:andPredicate:
+- (id)fetchByEntity:(NSString *)title andPredicate:(NSString *)predicate {
+    NSArray *valuesArray          = nil;
+    NSError *fetchError           = nil;
+    
+    NSFetchRequest *newRequest = [self requestForEntity:title andPredicate:predicate];
+    
+    valuesArray = [self.managedObjectContext executeFetchRequest:newRequest error:&fetchError];
+    
+    if (fetchError) {
+        NSLog(@"Fetch values as dictionary error -> %@ ", fetchError.description);
+        return fetchError.description;
+    } else if ([valuesArray count] > 0) {
+        return valuesArray;
+    }
+    
+    return nil;
+}
+#pragma mark -
+
+
+#pragma mark - requestForEntity:andPredicate:
+- (NSFetchRequest *)requestForEntity:(NSString *)entity andPredicate:(NSString *)predicate {
+    NSEntityDescription *fetchEntity = [NSEntityDescription entityForName:entity
+                                                   inManagedObjectContext:self.managedObjectContext];
+    
     NSFetchRequest *newRequest          = [[NSFetchRequest alloc] init];
     newRequest.entity                   = fetchEntity;
     newRequest.returnsDistinctResults   = YES;
@@ -53,17 +103,8 @@
     if (predicate) {
         [newRequest setPredicate:[NSPredicate predicateWithFormat:predicate]];
     }
-
-    fetchedValues = [self.managedObjectContext executeFetchRequest:newRequest error:&fetchError];
     
-    if ([fetchedValues count] > 0) {
-        valuesArray = fetchedValues;
-    } else {
-        if (fetchError)
-            NSLog(@"Fetch values as dictionary error -> %@ ", fetchError.description);        
-    }
-    
-    return valuesArray;
+    return newRequest;
 }
 #pragma mark -
 

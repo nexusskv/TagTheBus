@@ -67,20 +67,39 @@
 
 #pragma mark - createDataSource
 - (void)createDataSource {
-    NSString *predicate = [NSString stringWithFormat:@"object_id = '%lu'", (unsigned long)self.detailedObjectId];
-    Station *selectedStation = [[[DataFetcher shared] fetchByEntity:@"Station" andPredicate:predicate] lastObject];
+    __block NSString *predicate = [NSString stringWithFormat:@"object_id = '%lu'", (unsigned long)self.detailedObjectId];
     
-    self.title = selectedStation.street_name;
-    
-    predicate = [NSString stringWithFormat:@"station_id = '%@'", selectedStation.object_id];
-    NSArray *fetchedListArray = [[DataFetcher shared] fetchByEntity:@"StationPhoto" andPredicate:predicate];
-    
-    if ([fetchedListArray count] > 0) {
-        self.listArray = [fetchedListArray sortedArrayUsingDescriptors:[self getSortDescriptorsByKey:@"photo_date"
-                                                                                              andAsc:NO]];
-        
-        [self.listTable reloadData];
-    }
+    [[DataFetcher shared] fetchByEntity:@"Station"
+                          withPredicate:predicate
+                            andCallback:^(id resultObject) {
+                                
+        if ([resultObject isKindOfClass:[NSString class]]) {
+            [self showAlertMessage:resultObject];
+        } else if ([resultObject isKindOfClass:[NSArray class]]) {
+            Station *selectedStation = [resultObject lastObject];
+            
+            self.title = selectedStation.street_name;
+            
+            predicate = [NSString stringWithFormat:@"station_id = '%@'", selectedStation.object_id];
+            
+            [[DataFetcher shared] fetchByEntity:@"StationPhoto"
+                                  withPredicate:predicate
+                                    andCallback:^(id resultObject) {
+                                        
+                if ([resultObject isKindOfClass:[NSString class]]) {
+                    [self showAlertMessage:resultObject];
+                } else if ([resultObject isKindOfClass:[NSArray class]]) {
+                    NSArray *fetchedArray = (NSArray *)resultObject;
+                    
+                    if ([fetchedArray count] > 0) {
+                        self.listArray = [fetchedArray sortedArrayUsingDescriptors:[self getSortDescriptorsByKey:@"photo_date"
+                                                                                                          andAsc:NO]];
+                        [self.listTable reloadData];
+                    }
+                }
+            }];
+        }
+    }];
 }
 #pragma mark -
 
